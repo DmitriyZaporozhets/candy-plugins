@@ -9,16 +9,37 @@ var CandyShop = (function (self) { return self; }(CandyShop || {}));
 
 CandyShop.SearchBox = (function (self, Candy, Strophe, $) {
 	var _options = {
+		// domain that hosts the search users service
+		mucDomain: null,
 
+		// list of fields used by searching. Null value will be replaced by search text value. Non null value will be passed directly
+		searchFields: {
+			first: null,
+			last: null,
+			nick: null,
+			email: null
+		}
 	};
 
-	var _timer = 0;
+	self.about = {
+		name: 'Candy Plugin Search Box',
+    	version: '1.0'
+	};
+
+	var _connection;
 
 	self.init = function (options) {
 		$.extend(_options, options);
+		
+		if (typeof _options.mucDomain !== 'string') {
+			console.error('SearchBox plugin: mucDomain option must be set');
+		}
+
 		self.applyTranslations();
 
 		self.createSearchBoxButton();
+
+		_connection = Candy.Core.getConnection();
 	};
 
 	self.createSearchBoxButton = function () {
@@ -36,24 +57,68 @@ CandyShop.SearchBox = (function (self, Candy, Strophe, $) {
 		});
 		Candy.View.Pane.Chat.Modal.show(html, true);
 
-		$('.searchList').bind('click', 'a', function (e) {
-			var roomJid = this.href.split('#')[1];
+		$('.searchList').on('click', 'a', function (e) {
+			//var roomJid = this.href.split('#')[1];
 			//Candy.Core.Action.Jabber.Room.Join(roomJid);
 			Candy.View.Pane.Chat.Modal.hide();
 			e.preventDefault();
 		});
 
-		$('.searchList .collocutor-search-input').bind('keyup', function(e){
-			if (_timer > 0) {
-				clearTimeout(_timer);
-			}
+		$('.searchList .collocutor-search-button').on('click', function(e){
+			var text = $('.searchList .collocutor-search-input').val();
 
-			_timer = setTimeout(self.search, 1000);
+			self.search(text);
 		});
 	};
 
-	self.search = function(text) {
+	self.search = function(text, fields) {
+		var iq = $iq(
+			{
+				type: 'set',
+				id: 'search2',
+				to: _options.mucDomain
+			}).c('query', {xmlns: 'jabber:iq:search'})
+			.c('x', {xmlns: 'jabber:x:data', type:'submit'});
 		
+			$.each(_options.searchFields, function(index, value) {
+				iq
+				.c('field', {var: index})
+				.c('value', value === null ? text : value)
+				.up()
+				.up();
+			});
+		
+		_connection.sendIQ(iq, self.updateSearchResult);
+	};
+
+	self.updateSearchResult = function(iq) {
+		console.log(iq);
+		var searchResultList = $('item', iq).map(function() {
+			var result = {};
+			var $item = $(this);
+			var resultFields = $.extend({jid: null}, _options.searchFields);
+
+			$.each(resultFields, function(index, value) {
+				var $field = $item.find('field[var="' + index + '"]');
+				var $value = $field.find('value');
+
+				if ($value) {
+					result[index] = $value.text();
+				}
+			});
+
+			return result;
+		}).filter(function(index, value) {
+			var isMe = value.jid == Candy.Core.getUser().getJid();
+
+			return !($.isEmptyObject(value) || isMe); 
+		});
+
+		self.displaySearchResult(searchResultList);
+	};
+
+	self.displaySearchResult = function(list) {
+		console.log(list);
 	};
 
 	self.applyTranslations = function () {
@@ -78,19 +143,20 @@ CandyShop.SearchBox = (function (self, Candy, Strophe, $) {
 
 CandyShop.SearchBox.Template = (function (self) {
 	var searchTemplate = '<div class="container-fluid">\
-						<div class="searchList">\
-							<h2>{{title}}</h2>\
-							<div class="row">\
-								<input type="text" class="form-control collocutor-search-input">\
-							</div>\
-							<div class="row">\
-								<ul class="collocutor-search-result">\
-									{{#searchResultList}}\
-									<li><a href="#{{jid}}">{{name}}</a></li>\
-									{{/searchResultList}}\
-								</ul>\
-							</div>\
-						 </div>\
+							<div class="searchList">\
+								<h4>{{title}}</h4>\
+								<div class="row">\
+										<input type="text" class="form-control collocutor-search-input">\
+										<button type="button" class="btn btn-default collocutor-search-button"><span class="glyphicon glyphicon-search"></span></button>\
+								</div>\
+								<div class="row">\
+									<ul class="collocutor-search-result">\
+										{{#searchResultList}}\
+										<li><a href="#{{jid}}">{{name}}</a></li>\
+										{{/searchResultList}}\
+									</ul>\
+								</div>\
+						 	</div>\
 						 </div>';
 
 	self.search = searchTemplate;
