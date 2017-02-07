@@ -1,0 +1,16 @@
+#chat-toolbar #search-box-control {
+    float: right;
+}
+
+.searchList {
+    min-height: 250px;
+}
+
+.collocutor-search-result {
+    max-height: 300px;
+    overflow-y: hidden;
+}
+
+#chat-modal .searchList input {
+    width: 100%;
+}
