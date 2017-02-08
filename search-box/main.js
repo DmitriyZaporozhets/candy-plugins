@@ -109,7 +109,9 @@ CandyShop.SearchBox = (function (self, Candy, Strophe, $) {
 
 			return result;
 		}).filter(function(index, value) {
-			var isMe = value.jid == Candy.Core.getUser().getJid();
+			var currentJid = Candy.Core.getUser().getJid();
+			var currentBareJid = Strophe.getBareJidFromJid(currentJid);
+			var isMe = value.jid === currentBareJid;
 
 			return !($.isEmptyObject(value) || isMe); 
 		});
@@ -142,7 +144,7 @@ CandyShop.SearchBox = (function (self, Candy, Strophe, $) {
 }(CandyShop.SearchBox || {}, Candy, Strophe, jQuery));
 
 CandyShop.SearchBox.Template = (function (self) {
-	var searchTemplate = '<div class="container-fluid">\
+	self.search = '<div class="container-fluid">\
 							<div class="searchList">\
 								<h4>{{title}}</h4>\
 								<div class="row">\
@@ -151,15 +153,14 @@ CandyShop.SearchBox.Template = (function (self) {
 								</div>\
 								<div class="row">\
 									<ul class="collocutor-search-result">\
-										{{#searchResultList}}\
-										<li><a href="#{{jid}}">{{name}}</a></li>\
-										{{/searchResultList}}\
 									</ul>\
 								</div>\
 						 	</div>\
 						 </div>';
 
-	self.search = searchTemplate;
+	self.searchResult = '{{#searchResultList}}\
+							<li><a href="#{{jid}}">{{Username}}</a></li>\
+						{{/searchResultList}}';
 
 	return self;
 })(CandyShop.RoomPanel.Template || {});
