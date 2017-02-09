@@ -2,11 +2,24 @@
     float: right;
 }
 
+input[type='text']#collocutor-search-input{
+    padding: 0px 4px;
+    height: 34px;
+    width: auto;
+    border-radius: 4px;
+}
+
+.searchList .form-group {
+    display: inline-block;
+    margin-bottom: 0px;
+    vertical-align: middle;
+}
+
 .searchList {
     min-height: 250px;
 }
 
 .collocutor-search-result {
     max-height: 300px;
-    overflow-y: hidden;
+    overflow-y: scroll;
 }

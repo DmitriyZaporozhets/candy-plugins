@@ -52,8 +52,7 @@ CandyShop.SearchBox = (function (self, Candy, Strophe, $) {
 
 	self.show = function (elem) {
 		var html = Mustache.to_html(CandyShop.SearchBox.Template.search, {
-			title: $.i18n._('candyshopSearchBox'),
-			searchResultList: _options.searchResult
+			title: $.i18n._('candyshopSearchBox')
 		});
 		Candy.View.Pane.Chat.Modal.show(html, true);
 
@@ -64,8 +63,10 @@ CandyShop.SearchBox = (function (self, Candy, Strophe, $) {
 			e.preventDefault();
 		});
 
-		$('.searchList .collocutor-search-button').on('click', function(e){
-			var text = $('.searchList .collocutor-search-input').val();
+		$('.searchList form').on('submit', function(e){
+			e.preventDefault();
+
+			var text = $('.searchList #collocutor-search-input').val();
 
 			self.search(text);
 		});
@@ -92,7 +93,6 @@ CandyShop.SearchBox = (function (self, Candy, Strophe, $) {
 	};
 
 	self.updateSearchResult = function(iq) {
-		console.log(iq);
 		var searchResultList = $('item', iq).map(function() {
 			var result = {};
 			var $item = $(this);
@@ -116,11 +116,16 @@ CandyShop.SearchBox = (function (self, Candy, Strophe, $) {
 			return !($.isEmptyObject(value) || isMe); 
 		});
 
-		self.displaySearchResult(searchResultList);
+		self.displaySearchResult($.makeArray(searchResultList));
 	};
 
 	self.displaySearchResult = function(list) {
 		console.log(list);
+		var html = Mustache.to_html(CandyShop.SearchBox.Template.searchResult(), {
+			searchResultList: list
+		});
+
+		$('.searchList .collocutor-search-result').html(html);
 	};
 
 	self.applyTranslations = function () {
@@ -136,31 +141,39 @@ CandyShop.SearchBox = (function (self, Candy, Strophe, $) {
 			if (Candy.View.Translation[k]) {
 				Candy.View.Translation[k].candyshopSearchBox = v;
 			}
-
 		});
 	};
 
 	return self;
 }(CandyShop.SearchBox || {}, Candy, Strophe, jQuery));
 
-CandyShop.SearchBox.Template = (function (self) {
-	self.search = '<div class="container-fluid">\
-							<div class="searchList">\
-								<h4>{{title}}</h4>\
-								<div class="row">\
-										<input type="text" class="form-control collocutor-search-input">\
-										<button type="button" class="btn btn-default collocutor-search-button"><span class="glyphicon glyphicon-search"></span></button>\
-								</div>\
-								<div class="row">\
-									<ul class="collocutor-search-result">\
-									</ul>\
-								</div>\
-						 	</div>\
-						 </div>';
+CandyShop.SearchBox.Template = {
+	search: '<div class="container-fluid">\
+				<div class="searchList">\
+					<h4>{{title}}</h4>\
+						<div class="row">\
+							<form class="form-inline">\
+								<div class="form-group"><input id="collocutor-search-input" type="text" class="form-control"></div>\
+								<button type="form" class="btn btn-default collocutor-search-button"><span class="glyphicon glyphicon-search"></span></button>\
+							</form>\
+						</div>\
+					<div class="row">\
+						<div class="list-group collocutor-search-result"></div>\
+					</div>\
+				</div>\
+			</div>',
 
-	self.searchResult = '{{#searchResultList}}\
-							<li><a href="#{{jid}}">{{Username}}</a></li>\
-						{{/searchResultList}}';
+	_defaultSearchResult: '{{nick}} ({{first}} {{last}})',
 
-	return self;
-})(CandyShop.RoomPanel.Template || {});
+	_advancedSearchResult: null,
+
+	searchResult: function() {
+		var template = this._advancedSearchResult === null ? this._defaultSearchResult : this._advancedSearchResult;
+
+		return '{{#searchResultList}}<a href="#{{jid}}" class="list-group-item">' + template + '</a>{{/searchResultList}}';
+	},
+
+	setAdvancedSearch: function(template) {
+		this._advancedSearchResult = template;
+	}
+}
