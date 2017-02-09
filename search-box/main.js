@@ -10,7 +10,7 @@ var CandyShop = (function (self) { return self; }(CandyShop || {}));
 CandyShop.SearchBox = (function (self, Candy, Strophe, $) {
 	var _options = {
 		// domain that hosts the search users service
-		mucDomain: null,
+		searchDomain: null,
 
 		// list of fields used by searching. Null value will be replaced by search text value. Non null value will be passed directly
 		searchFields: {
@@ -31,8 +31,8 @@ CandyShop.SearchBox = (function (self, Candy, Strophe, $) {
 	self.init = function (options) {
 		$.extend(_options, options);
 		
-		if (typeof _options.mucDomain !== 'string') {
-			console.error('SearchBox plugin: mucDomain option must be set');
+		if (typeof _options.searchDomain !== 'string') {
+			console.error('SearchBox plugin: searchDomain option must be set');
 		}
 
 		self.applyTranslations();
@@ -57,10 +57,13 @@ CandyShop.SearchBox = (function (self, Candy, Strophe, $) {
 		Candy.View.Pane.Chat.Modal.show(html, true);
 
 		$('.searchList').on('click', 'a', function (e) {
-			//var roomJid = this.href.split('#')[1];
-			//Candy.Core.Action.Jabber.Room.Join(roomJid);
-			Candy.View.Pane.Chat.Modal.hide();
 			e.preventDefault();
+
+			var userJid = this.href.split('#')[1];
+			var username = Strophe.getNodeFromJid(userJid);
+
+			Candy.View.Pane.PrivateRoom.open(userJid, username, true, true);
+			Candy.View.Pane.Chat.Modal.hide();
 		});
 
 		$('.searchList form').on('submit', function(e){
@@ -77,7 +80,7 @@ CandyShop.SearchBox = (function (self, Candy, Strophe, $) {
 			{
 				type: 'set',
 				id: 'search2',
-				to: _options.mucDomain
+				to: _options.searchDomain
 			}).c('query', {xmlns: 'jabber:iq:search'})
 			.c('x', {xmlns: 'jabber:x:data', type:'submit'});
 		
