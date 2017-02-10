@@ -43,7 +43,7 @@ CandyShop.SearchBox = (function (self, Candy, Strophe, $) {
 	};
 
 	self.createSearchBoxButton = function () {
-		var html = '<li id="search-box-control" data-tooltip="' + $.i18n._('candyshopSearchBox') + '" aria-label="Search"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></li>';
+		var html = '<li id="search-box-control" data-tooltip="' + $.i18n._('SearchBoxTitle') + '" aria-label="Search"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></li>';
 		$('#chat-toolbar .usercount').after(html);
 		$('#search-box-control').on('click', function () {
 			CandyShop.SearchBox.show(this);
@@ -52,7 +52,7 @@ CandyShop.SearchBox = (function (self, Candy, Strophe, $) {
 
 	self.show = function (elem) {
 		var html = Mustache.to_html(CandyShop.SearchBox.Template.search, {
-			title: $.i18n._('candyshopSearchBox')
+			title: $.i18n._('SearchBoxTitle')
 		});
 		Candy.View.Pane.Chat.Modal.show(html, true);
 
@@ -125,7 +125,8 @@ CandyShop.SearchBox = (function (self, Candy, Strophe, $) {
 	self.displaySearchResult = function(list) {
 		console.log(list);
 		var html = Mustache.to_html(CandyShop.SearchBox.Template.searchResult(), {
-			searchResultList: list
+			searchResultList: list,
+			noResultMessage: $.i18n._('SearchBoxNoResultMessage')
 		});
 
 		$('.searchList .collocutor-search-result').html(html);
@@ -133,16 +134,17 @@ CandyShop.SearchBox = (function (self, Candy, Strophe, $) {
 
 	self.applyTranslations = function () {
 		var translations = {
-			'en': 'Search сontacts',
-			'ru': 'Поиск контактов',
-			'de': 'Kontaktsuche',
-			'fr': 'Сontacts de recherche',
-			'nl': 'Search contacten',
-			'es': 'Contactos de búsqueda'
+			'en': ['Search сontacts', 'No results found'],
+			'ru': ['Поиск контактов', 'Результатов не найдено'],
+			'de': ['Kontaktsuche', 'keine Ergebnisse'],
+			'fr': ['Сontacts de recherche', 'Aucun résultat trouvé'],
+			'nl': ['Search contacten', 'Geen resultaten gevonden'],
+			'es': ['Contactos de búsqueda', 'No hay resultados']
 		};
 		$.each(translations, function (k, v) {
 			if (Candy.View.Translation[k]) {
-				Candy.View.Translation[k].candyshopSearchBox = v;
+				Candy.View.Translation[k].SearchBoxTitle = v[0];
+				Candy.View.Translation[k].SearchBoxNoResultMessage = v[1];
 			}
 		});
 	};
@@ -165,6 +167,7 @@ CandyShop.SearchBox.Template = {
 					</div>\
 				</div>\
 			</div>',
+	
 
 	_defaultSearchResult: '{{nick}} ({{first}} {{last}})',
 
@@ -173,7 +176,8 @@ CandyShop.SearchBox.Template = {
 	searchResult: function() {
 		var template = this._advancedSearchResult === null ? this._defaultSearchResult : this._advancedSearchResult;
 
-		return '{{#searchResultList}}<a href="#{{jid}}" class="list-group-item">' + template + '</a>{{/searchResultList}}';
+		return '{{#searchResultList}}<a href="#{{jid}}" class="list-group-item">' + template + '</a>{{/searchResultList}}' + 
+				'{{^searchResultList}}{{noResultMessage}}{{/searchResultList}}';
 	},
 
 	setAdvancedSearch: function(template) {
