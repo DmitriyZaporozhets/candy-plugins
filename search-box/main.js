@@ -18,12 +18,18 @@ CandyShop.SearchBox = (function (self, Candy, Strophe, $) {
 			last: null,
 			nick: null,
 			email: null
-		}
+		},
+
+		// Show tab for searching users
+		showTab: false,
+
+		//Show toolbar button for searching users
+		showToolbarButton: true
 	};
 
 	self.about = {
 		name: 'Candy Plugin Search Box',
-    	version: '1.0'
+    	version: '1.0.1'
 	};
 
 	var _connection;
@@ -37,17 +43,35 @@ CandyShop.SearchBox = (function (self, Candy, Strophe, $) {
 
 		self.applyTranslations();
 
-		self.createSearchBoxButton();
+		if (_options.showToolbarButton) {
+			self.createSearchBoxButton();
+		}
+
+		if (_options.showTab) {
+			self.createSearchTab();
+		}
+
+		self.handleSearchControlClick();
 
 		_connection = Candy.Core.getConnection();
 	};
 
-	self.createSearchBoxButton = function () {
-		var html = '<li id="search-box-control" data-tooltip="' + $.i18n._('SearchBoxTitle') + '" aria-label="Search"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></li>';
-		$('#chat-toolbar .usercount').after(html);
-		$('#search-box-control').on('click', function () {
+	self.handleSearchControlClick = function() {
+		$('.search-box-control').on('click', function (){
 			CandyShop.SearchBox.show(this);
 		});
+	};
+
+	self.createSearchTab = function () {
+		var chatTabs = $('#chat-tabs');
+        var searchTabHtml = '<li id="search-box-tab" class="search-box-control" data-tooltip="' + $.i18n._('SearchBoxTitle') + '" aria-label="Search"><a href="#" class="label"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></a></li>';
+        
+		chatTabs.prepend(searchTabHtml);
+	};
+
+	self.createSearchBoxButton = function () {
+		var html = '<li id="search-box-button" class="search-box-control" data-tooltip="' + $.i18n._('SearchBoxTitle') + '" aria-label="Search"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></li>';
+		$('#chat-toolbar .usercount').after(html);
 	};
 
 	self.show = function (elem) {
