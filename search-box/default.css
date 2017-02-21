@@ -29,5 +29,5 @@ input[type='text']#collocutor-search-input{
 
 .collocutor-search-result {
     max-height: 300px;
-    overflow-y: scroll;
+    overflow-y: auto;
 }
