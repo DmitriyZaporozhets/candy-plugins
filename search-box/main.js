@@ -64,7 +64,7 @@ CandyShop.SearchBox = (function (self, Candy, Strophe, $) {
 
 	self.createSearchTab = function () {
 		var chatTabs = $('#chat-tabs');
-        var searchTabHtml = '<li id="search-box-tab" class="search-box-control" data-tooltip="' + $.i18n._('SearchBoxTitle') + '" aria-label="Search"><a href="#" class="label"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></a></li>';
+        var searchTabHtml = '<li id="search-box-tab" class="search-box-control" aria-label="Search"><a href="#" class="label"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></a></li>';
         
 		chatTabs.prepend(searchTabHtml);
 	};
