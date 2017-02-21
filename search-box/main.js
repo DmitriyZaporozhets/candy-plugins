@@ -147,7 +147,6 @@ CandyShop.SearchBox = (function (self, Candy, Strophe, $) {
 	};
 
 	self.displaySearchResult = function(list) {
-		console.log(list);
 		var html = Mustache.to_html(CandyShop.SearchBox.Template.searchResult(), {
 			searchResultList: list,
 			noResultMessage: $.i18n._('SearchBoxNoResultMessage')
